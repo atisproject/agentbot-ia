@@ -1,16 +1,34 @@
 import os
 import logging
 import json
-from openai import OpenAI
+import sys
 from app import db
 from models import Interacao, Lead, BaseConhecimento
 
 # Setup logging
 logger = logging.getLogger(__name__)
 
-# Initialize OpenAI client
+# Configuração do cliente OpenAI com tratamento de versões diferentes
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
-client = OpenAI(api_key=OPENAI_API_KEY)
+USE_LEGACY_API = False  # Flag para indicar qual versão da API usar
+
+try:
+    logger.info("Tentando importar OpenAI SDK novo (v1+)")
+    from openai import OpenAI
+    client = OpenAI(api_key=OPENAI_API_KEY)
+    logger.info("OpenAI client v1+ inicializado com sucesso")
+except (ImportError, TypeError) as e:
+    logger.warning(f"Erro ao inicializar OpenAI novo: {str(e)}")
+    try:
+        logger.info("Tentando importar SDK antigo do OpenAI")
+        # Fallback para versões antigas
+        import openai as client
+        client.api_key = OPENAI_API_KEY
+        USE_LEGACY_API = True
+        logger.info("OpenAI client (legacy) inicializado com sucesso") 
+    except Exception as e:
+        logger.error(f"Erro crítico ao inicializar OpenAI: {str(e)}")
+        sys.stderr.write(f"ERRO FATAL: Não foi possível inicializar OpenAI: {str(e)}")
 
 def agente_boas_vindas(nome):
     """
@@ -78,12 +96,24 @@ def processar_mensagem(lead_id, mensagem_texto):
         # Gerar resposta usando o modelo gpt-4o (o mais recente)
         # the newest OpenAI model is "gpt-4o" which was released May 13, 2024.
         # do not change this unless explicitly requested by the user
-        resposta = client.chat.completions.create(
-            model="gpt-4o",
-            messages=mensagens,
-            temperature=0.7,
-            max_tokens=500,
-        )
+        if USE_LEGACY_API:
+            # Usar API antiga para versões anteriores da biblioteca
+            logger.info("Usando API legada (v0) para processar mensagem")
+            resposta = client.ChatCompletion.create(
+                model="gpt-4-turbo",  # Modelo mais compatível com versão antiga
+                messages=mensagens,
+                temperature=0.7,
+                max_tokens=500,
+            )
+        else:
+            # Usar API nova (v1+)
+            logger.info("Usando API moderna (v1+) para processar mensagem")  
+            resposta = client.chat.completions.create(
+                model="gpt-4o",
+                messages=mensagens,
+                temperature=0.7,
+                max_tokens=500,
+            )
         
         return resposta.choices[0].message.content
     
@@ -105,21 +135,34 @@ def analisar_sentimento_cliente(texto):
         # Chamada à API do OpenAI para análise de sentimento
         # the newest OpenAI model is "gpt-4o" which was released May 13, 2024.
         # do not change this unless explicitly requested by the user
-        resposta = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {"role": "system", "content": """Analise o sentimento deste texto de um cliente e retorne 
-                 um JSON com os seguintes campos:
-                 - sentimento: um número entre -1 (muito negativo) e 1 (muito positivo)
-                 - prob_conversao: probabilidade de conversão entre 0 e 1
-                 - interesse: nível de interesse do cliente entre 0 e 1
-                 - urgencia: indicação de urgência na resposta entre 0 e 1
-                 """},
-                {"role": "user", "content": texto}
-            ],
-            response_format={"type": "json_object"},
-            temperature=0.3,
-        )
+        mensagens_sentimento = [
+            {"role": "system", "content": """Analise o sentimento deste texto de um cliente e retorne 
+             um JSON com os seguintes campos:
+             - sentimento: um número entre -1 (muito negativo) e 1 (muito positivo)
+             - prob_conversao: probabilidade de conversão entre 0 e 1
+             - interesse: nível de interesse do cliente entre 0 e 1
+             - urgencia: indicação de urgência na resposta entre 0 e 1
+             """},
+            {"role": "user", "content": texto}
+        ]
+        
+        if USE_LEGACY_API:
+            # Usar API antiga para versões anteriores da biblioteca
+            logger.info("Usando API legada (v0) para análise de sentimento")
+            resposta = client.ChatCompletion.create(
+                model="gpt-4-turbo",  # Modelo mais compatível com versão antiga
+                messages=mensagens_sentimento,
+                temperature=0.3,
+            )
+        else:
+            # Usar API nova (v1+)
+            logger.info("Usando API moderna (v1+) para análise de sentimento")  
+            resposta = client.chat.completions.create(
+                model="gpt-4o",
+                messages=mensagens_sentimento,
+                response_format={"type": "json_object"},
+                temperature=0.3,
+            )
         
         # Processar resultado
         resultado = json.loads(resposta.choices[0].message.content)
