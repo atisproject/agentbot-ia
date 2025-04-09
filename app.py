@@ -67,7 +67,8 @@ def start_scheduler():
         logger.info("Background scheduler started")
 
 # TEMPORARY: Route to initialize the database (Render doesn't allow shell access)
-@app.route("/init-db", methods=["POST"])
+@app.route("/init-db", methods=["GET", "POST"])
+
 def initialize_database():
     secret = request.args.get("secret")
     if secret != os.getenv("INIT_DB_SECRET"):
