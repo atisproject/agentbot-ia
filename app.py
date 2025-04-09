@@ -1,6 +1,6 @@
 import os
 import logging
-from flask import Flask
+from flask import Flask, request, jsonify
 from flask_login import LoginManager
 from werkzeug.middleware.proxy_fix import ProxyFix
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -44,10 +44,10 @@ def init_db():
     with app.app_context():
         logger.info("Creating database tables...")
         db.create_all()
-        
+
         # Import here to avoid circular imports
         from models import User
-        
+
         # Check if admin user exists, if not create one
         if not User.query.filter_by(username="admin").first():
             from werkzeug.security import generate_password_hash
@@ -65,5 +65,19 @@ def start_scheduler():
     if not scheduler.running:
         scheduler.start()
         logger.info("Background scheduler started")
+
+# TEMPORARY: Route to initialize the database (Render doesn't allow shell access)
+@app.route("/init-db", methods=["POST"])
+def initialize_database():
+    secret = request.args.get("secret")
+    if secret != os.getenv("INIT_DB_SECRET"):
+        return jsonify({"error": "unauthorized"}), 403
+
+    try:
+        init_db()
+        return jsonify({"status": "database initialized successfully"})
+    except Exception as e:
+        logger.error(f"Erro ao inicializar o banco: {e}")
+        return jsonify({"error": str(e)}), 500
 
 # Note: Routes are imported in main.py to avoid circular dependencies
