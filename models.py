@@ -4,6 +4,7 @@ from database import db
 
 class User(UserMixin, db.Model):
     """User model for authentication"""
+    __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -13,6 +14,7 @@ class User(UserMixin, db.Model):
 
 class Lead(db.Model):
     """Lead model for potential clients"""
+    __tablename__ = 'lead'
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120))
@@ -30,6 +32,7 @@ class Lead(db.Model):
 
 class Interacao(db.Model):
     """Interaction model for communication with leads"""
+    __tablename__ = 'interacao'
     id = db.Column(db.Integer, primary_key=True)
     lead_id = db.Column(db.Integer, db.ForeignKey('lead.id'), nullable=False)
     mensagem = db.Column(db.Text, nullable=False)
@@ -39,6 +42,7 @@ class Interacao(db.Model):
 
 class Formulario(db.Model):
     """Form model for client data collection"""
+    __tablename__ = 'formulario'
     id = db.Column(db.Integer, primary_key=True)
     lead_id = db.Column(db.Integer, db.ForeignKey('lead.id'), nullable=False)
     tipo = db.Column(db.String(50), nullable=False)  # avaliacao_fisica, anamnese_nutricional, etc.
@@ -51,6 +55,7 @@ class Formulario(db.Model):
 
 class BaseConhecimento(db.Model):
     """Knowledge base for AI responses"""
+    __tablename__ = 'base_conhecimento'
     id = db.Column(db.Integer, primary_key=True)
     categoria = db.Column(db.String(50), nullable=False)
     pergunta = db.Column(db.Text, nullable=False)
@@ -61,6 +66,7 @@ class BaseConhecimento(db.Model):
 
 class Configuracao(db.Model):
     """System configuration settings"""
+    __tablename__ = 'configuracao'
     id = db.Column(db.Integer, primary_key=True)
     chave = db.Column(db.String(50), unique=True, nullable=False)
     valor = db.Column(db.Text, nullable=False)
