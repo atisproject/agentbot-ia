@@ -1,0 +1,491 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-users me-2"></i>Gestão de Leads</h1>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#novoLeadModal">
+            <i class="fas fa-user-plus me-1"></i> Novo Lead
+        </button>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Status</label>
+                    <select class="form-select" id="filtroStatus">
+                        <option value="">Todos</option>
+                        <option value="novo">Novos</option>
+                        <option value="em_contato">Em Contato</option>
+                        <option value="convertido">Convertidos</option>
+                        <option value="perdido">Perdidos</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Fonte</label>
+                    <select class="form-select" id="filtroFonte">
+                        <option value="">Todas</option>
+                        <option value="site">Site</option>
+                        <option value="indicacao">Indicação</option>
+                        <option value="campanha">Campanha</option>
+                        <option value="outros">Outros</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Buscar</label>
+                    <input type="text" class="form-control" id="busca" placeholder="Nome, email ou telefone">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button class="btn btn-primary w-100" id="btnFiltrar">
+                        <i class="fas fa-filter me-1"></i> Filtrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabela de Leads -->
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Contato</th>
+                            <th>Status</th>
+                            <th>Fonte</th>
+                            <th>Data</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if leads %}
+                            {% for lead in leads %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-circle bg-{{ 'success' if lead.status == 'convertido' else 'primary' if lead.status == 'em_contato' else 'secondary' }} me-2">
+                                            {{ lead.nome[:1].upper() }}
+                                        </div>
+                                        <div>
+                                            <span class="fw-bold">{{ lead.nome }}</span>
+                                            {% if lead.email %}
+                                            <div class="small text-muted">{{ lead.email }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ lead.telefone }}</td>
+                                <td>
+                                    <span class="badge rounded-pill bg-{{ 'success' if lead.status == 'convertido' else 'primary' if lead.status == 'em_contato' else 'warning' if lead.status == 'novo' else 'danger' }}">
+                                        {{ lead.status.replace('_', ' ').title() }}
+                                    </span>
+                                </td>
+                                <td>{{ lead.fonte.title() if lead.fonte else '-' }}</td>
+                                <td>{{ lead.criado_em.strftime('%d/%m/%Y') }}</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{{ url_for('detalhe_lead', lead_id=lead.id) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-outline-success" onclick="enviarMensagem({{ lead.id }})">
+                                            <i class="fas fa-comment"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-info" onclick="enviarFormulario({{ lead.id }})">
+                                            <i class="fas fa-file-alt"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-warning" onclick="editarLead({{ lead.id }})">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center py-4">
+                                    <i class="fas fa-search fa-2x mb-3 text-muted"></i>
+                                    <p>Nenhum lead encontrado.</p>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Novo Lead -->
+<div class="modal fade" id="novoLeadModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-user-plus me-2"></i>Novo Lead</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formNovoLead" action="{{ url_for('criar_lead') }}" method="post">
+                    <div class="mb-3">
+                        <label for="nomeNovoLead" class="form-label">Nome Completo*</label>
+                        <input type="text" class="form-control" id="nomeNovoLead" name="nome" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="telefoneNovoLead" class="form-label">Telefone*</label>
+                        <input type="tel" class="form-control" id="telefoneNovoLead" name="telefone" placeholder="(DDD) 99999-9999" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="emailNovoLead" class="form-label">E-mail</label>
+                        <input type="email" class="form-control" id="emailNovoLead" name="email">
+                    </div>
+                    <div class="mb-3">
+                        <label for="fonteNovoLead" class="form-label">Fonte</label>
+                        <select class="form-select" id="fonteNovoLead" name="fonte">
+                            <option value="site">Site</option>
+                            <option value="indicacao">Indicação</option>
+                            <option value="campanha">Campanha</option>
+                            <option value="outros">Outros</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" form="formNovoLead" class="btn btn-primary">
+                    <i class="fas fa-save me-1"></i> Salvar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Enviar Mensagem -->
+<div class="modal fade" id="enviarMensagemModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-comment me-2"></i>Enviar Mensagem</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formEnviarMensagem">
+                    <input type="hidden" id="leadIdMensagem">
+                    <div class="mb-3">
+                        <label for="mensagemTexto" class="form-label">Mensagem</label>
+                        <textarea class="form-control" id="mensagemTexto" rows="4" required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="confirmarEnvioMensagem()">
+                    <i class="fas fa-paper-plane me-1"></i> Enviar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Enviar Formulário -->
+<div class="modal fade" id="enviarFormularioModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-file-alt me-2"></i>Enviar Formulário</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formEnviarFormulario">
+                    <input type="hidden" id="leadIdFormulario">
+                    <div class="mb-3">
+                        <label for="tipoFormulario" class="form-label">Tipo de Formulário</label>
+                        <select class="form-select" id="tipoFormulario" required>
+                            <option value="">Selecione...</option>
+                            <option value="avaliacao_fisica">Avaliação Física</option>
+                            <option value="anamnese_nutricional">Anamnese Nutricional</option>
+                            <option value="habitos_alimentares">Hábitos Alimentares</option>
+                            <option value="historico_saude">Histórico de Saúde</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="confirmarEnvioFormulario()">
+                    <i class="fas fa-paper-plane me-1"></i> Enviar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Editar Lead -->
+<div class="modal fade" id="editarLeadModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-edit me-2"></i>Editar Lead</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formEditarLead">
+                    <input type="hidden" id="editLeadId">
+                    <div class="mb-3">
+                        <label for="editNome" class="form-label">Nome Completo*</label>
+                        <input type="text" class="form-control" id="editNome" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editTelefone" class="form-label">Telefone*</label>
+                        <input type="tel" class="form-control" id="editTelefone" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editEmail" class="form-label">E-mail</label>
+                        <input type="email" class="form-control" id="editEmail">
+                    </div>
+                    <div class="mb-3">
+                        <label for="editFonte" class="form-label">Fonte</label>
+                        <select class="form-select" id="editFonte">
+                            <option value="site">Site</option>
+                            <option value="indicacao">Indicação</option>
+                            <option value="campanha">Campanha</option>
+                            <option value="whatsapp">WhatsApp</option>
+                            <option value="outros">Outros</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editStatus" class="form-label">Status</label>
+                        <select class="form-select" id="editStatus">
+                            <option value="novo">Novo</option>
+                            <option value="em_contato">Em Contato</option>
+                            <option value="convertido">Convertido</option>
+                            <option value="perdido">Perdido</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editObservacoes" class="form-label">Observações</label>
+                        <textarea class="form-control" id="editObservacoes" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="salvarEdicaoLead()">
+                    <i class="fas fa-save me-1"></i> Salvar Alterações
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Função para enviar mensagem para um lead
+    function enviarMensagem(leadId) {
+        document.getElementById('leadIdMensagem').value = leadId;
+        var modal = new bootstrap.Modal(document.getElementById('enviarMensagemModal'));
+        modal.show();
+    }
+
+    // Função para enviar formulário para um lead
+    function enviarFormulario(leadId) {
+        document.getElementById('leadIdFormulario').value = leadId;
+        var modal = new bootstrap.Modal(document.getElementById('enviarFormularioModal'));
+        modal.show();
+    }
+
+    // Função para editar um lead
+    function editarLead(leadId) {
+        // Buscar dados do lead
+        fetch(`/api/leads/${leadId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'sucesso') {
+                    var lead = data.lead;
+                    document.getElementById('editLeadId').value = lead.id;
+                    document.getElementById('editNome').value = lead.nome;
+                    document.getElementById('editTelefone').value = lead.telefone;
+                    document.getElementById('editEmail').value = lead.email || '';
+                    document.getElementById('editFonte').value = lead.fonte || 'outros';
+                    document.getElementById('editStatus').value = lead.status;
+                    document.getElementById('editObservacoes').value = lead.observacoes || '';
+                    
+                    var modal = new bootstrap.Modal(document.getElementById('editarLeadModal'));
+                    modal.show();
+                } else {
+                    alert('Erro ao carregar dados do lead');
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao carregar dados do lead');
+            });
+    }
+
+    // Função para confirmar envio de mensagem
+    function confirmarEnvioMensagem() {
+        var leadId = document.getElementById('leadIdMensagem').value;
+        var mensagem = document.getElementById('mensagemTexto').value;
+        
+        if (!mensagem.trim()) {
+            alert('Por favor, digite uma mensagem');
+            return;
+        }
+        
+        // Buscar o número de telefone do lead
+        fetch(`/api/leads/${leadId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'sucesso') {
+                    // Enviar mensagem via WhatsApp
+                    fetch('/api/whatsapp/enviar', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            numero: data.lead.telefone,
+                            mensagem: mensagem,
+                            lead_id: leadId
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(result => {
+                        if (result.status === 'sucesso') {
+                            alert('Mensagem enviada com sucesso!');
+                            var modal = bootstrap.Modal.getInstance(document.getElementById('enviarMensagemModal'));
+                            modal.hide();
+                            document.getElementById('mensagemTexto').value = '';
+                        } else {
+                            alert(`Erro ao enviar mensagem: ${result.mensagem}`);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro:', error);
+                        alert('Erro ao enviar mensagem');
+                    });
+                } else {
+                    alert('Erro ao obter informações do lead');
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao obter informações do lead');
+            });
+    }
+
+    // Função para confirmar envio de formulário
+    function confirmarEnvioFormulario() {
+        var leadId = document.getElementById('leadIdFormulario').value;
+        var tipoFormulario = document.getElementById('tipoFormulario').value;
+        
+        if (!tipoFormulario) {
+            alert('Por favor, selecione um tipo de formulário');
+            return;
+        }
+        
+        // Enviar formulário
+        fetch('/api/formularios', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                lead_id: leadId,
+                tipo: tipoFormulario
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'sucesso') {
+                alert('Formulário enviado com sucesso!');
+                var modal = bootstrap.Modal.getInstance(document.getElementById('enviarFormularioModal'));
+                modal.hide();
+                document.getElementById('tipoFormulario').value = '';
+            } else {
+                alert(`Erro ao enviar formulário: ${data.mensagem}`);
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            alert('Erro ao enviar formulário');
+        });
+    }
+
+    // Função para salvar edição de lead
+    function salvarEdicaoLead() {
+        var leadId = document.getElementById('editLeadId').value;
+        var dados = {
+            nome: document.getElementById('editNome').value,
+            telefone: document.getElementById('editTelefone').value,
+            email: document.getElementById('editEmail').value,
+            fonte: document.getElementById('editFonte').value,
+            status: document.getElementById('editStatus').value,
+            observacoes: document.getElementById('editObservacoes').value
+        };
+        
+        // Atualizar lead
+        fetch(`/api/leads/${leadId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(dados)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'sucesso') {
+                alert('Lead atualizado com sucesso!');
+                // Recarregar a página para mostrar as alterações
+                location.reload();
+            } else {
+                alert(`Erro ao atualizar lead: ${data.mensagem}`);
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            alert('Erro ao atualizar lead');
+        });
+    }
+
+    // Aplicar filtros na tabela de leads
+    document.getElementById('btnFiltrar').addEventListener('click', function() {
+        var status = document.getElementById('filtroStatus').value;
+        var fonte = document.getElementById('filtroFonte').value;
+        var busca = document.getElementById('busca').value.toLowerCase();
+        
+        var linhas = document.querySelectorAll('tbody tr');
+        
+        linhas.forEach(function(linha) {
+            var mostrar = true;
+            
+            // Filtrar por status
+            if (status && !linha.querySelector('td:nth-child(3) .badge').textContent.toLowerCase().includes(status.replace('_', ' '))) {
+                mostrar = false;
+            }
+            
+            // Filtrar por fonte
+            if (fonte && linha.querySelector('td:nth-child(4)').textContent.toLowerCase() !== fonte) {
+                mostrar = false;
+            }
+            
+            // Filtrar por busca
+            if (busca) {
+                var nome = linha.querySelector('td:nth-child(1)').textContent.toLowerCase();
+                var email = linha.querySelector('td:nth-child(1) .small') ? linha.querySelector('td:nth-child(1) .small').textContent.toLowerCase() : '';
+                var telefone = linha.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                
+                if (!nome.includes(busca) && !email.includes(busca) && !telefone.includes(busca)) {
+                    mostrar = false;
+                }
+            }
+            
+            linha.style.display = mostrar ? '' : 'none';
+        });
+    });
+</script>
+{% endblock %}

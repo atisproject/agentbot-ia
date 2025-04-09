@@ -1,0 +1,99 @@
+/* Custom CSS for NutriAI */
+
+/* Avatar circles for leads */
+.avatar-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+/* Message bubbles for interactions */
+.message-bubble {
+    max-width: 80%;
+    margin-bottom: 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: 1rem;
+    position: relative;
+}
+
+.message-bubble.user {
+    background-color: var(--bs-primary);
+    color: white;
+    border-bottom-right-radius: 0.25rem;
+    margin-left: auto;
+}
+
+.message-bubble.ia {
+    background-color: var(--bs-dark);
+    border: 1px solid var(--bs-secondary);
+    border-bottom-left-radius: 0.25rem;
+    margin-right: auto;
+}
+
+.message-bubble.sistema {
+    background-color: var(--bs-warning);
+    color: var(--bs-dark);
+    margin-right: auto;
+    margin-left: auto;
+    border-radius: 0.5rem;
+}
+
+/* Timestamp for messages */
+.message-time {
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+    color: var(--bs-gray-600);
+}
+
+/* Dashboard cards */
+.stat-card {
+    border: none;
+    border-radius: 10px;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Forms */
+.form-floating label {
+    color: var(--bs-gray-600);
+}
+
+/* Feature boxes on home page */
+.feature {
+    padding: 1.5rem;
+    text-align: center;
+    border-radius: 0.5rem;
+    transition: transform 0.3s;
+}
+
+.feature:hover {
+    transform: translateY(-5px);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bs-dark);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--bs-gray-700);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--bs-gray-600);
+}

@@ -1,0 +1,21 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-8 mx-auto text-center">
+            <div class="card shadow">
+                <div class="card-body py-5">
+                    <h1 class="display-1 text-danger mb-4">500</h1>
+                    <h2 class="mb-4">Erro Interno do Servidor</h2>
+                    <p class="lead mb-4">Desculpe, ocorreu um erro interno ao processar sua solicitação.</p>
+                    <p class="mb-4">Nossa equipe técnica foi notificada e está trabalhando para resolver o problema.</p>
+                    <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-home me-2"></i>Voltar para a página inicial
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

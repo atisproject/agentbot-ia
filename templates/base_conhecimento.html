@@ -1,0 +1,130 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-book me-2"></i>Base de Conhecimento
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info mb-4">
+                        <p class="mb-0">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Aqui você pode gerenciar a base de conhecimento utilizada pelo assistente de IA para responder às perguntas dos clientes.
+                        </p>
+                    </div>
+
+                    <!-- Formulário de Adição/Edição -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-plus-circle me-2"></i>Adicionar Novo Conhecimento
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form action="{{ url_for('base_conhecimento') }}" method="POST">
+                                <div class="mb-3">
+                                    <label for="categoria" class="form-label">Categoria</label>
+                                    <select class="form-select" id="categoria" name="categoria" required>
+                                        <option value="">Selecione uma categoria</option>
+                                        <option value="nutricao">Nutrição</option>
+                                        <option value="treino">Treino</option>
+                                        <option value="servicos">Serviços</option>
+                                        <option value="produtos">Produtos</option>
+                                        <option value="faq">Perguntas Frequentes</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="pergunta" class="form-label">Pergunta/Tópico</label>
+                                    <input type="text" class="form-control" id="pergunta" name="pergunta" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="resposta" class="form-label">Resposta/Conteúdo</label>
+                                    <textarea class="form-control" id="resposta" name="resposta" rows="5" required></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="palavras_chave" class="form-label">Palavras-chave (separadas por vírgula)</label>
+                                    <input type="text" class="form-control" id="palavras_chave" name="palavras_chave">
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i>Salvar
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Lista de Conhecimentos -->
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="fas fa-list me-2"></i>Base de Conhecimento Atual
+                            </h5>
+                            <div>
+                                <div class="input-group">
+                                    <input type="text" id="busca" class="form-control" placeholder="Buscar...">
+                                    <button class="btn btn-outline-secondary" type="button">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Categoria</th>
+                                            <th>Pergunta/Tópico</th>
+                                            <th>Palavras-chave</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% if conhecimentos %}
+                                            {% for item in conhecimentos %}
+                                            <tr>
+                                                <td>{{ item.categoria|title }}</td>
+                                                <td>{{ item.pergunta }}</td>
+                                                <td>{{ item.palavras_chave }}</td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-primary">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-danger">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        {% else %}
+                                            <tr>
+                                                <td colspan="4" class="text-center">Nenhum item cadastrado na base de conhecimento.</td>
+                                            </tr>
+                                        {% endif %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Implementar busca em tempo real
+        const busca = document.getElementById('busca');
+        busca.addEventListener('keyup', function() {
+            // Implementar lógica de busca
+        });
+    });
+</script>
+{% endblock %}

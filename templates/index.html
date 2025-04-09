@@ -1,0 +1,121 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row align-items-center" style="min-height: 80vh;">
+        <div class="col-lg-6">
+            <div class="card shadow-lg border-0 rounded-lg">
+                <div class="card-header bg-success bg-opacity-25">
+                    <h3 class="text-center">
+                        <i class="fas fa-leaf text-success"></i> NutriAI
+                    </h3>
+                </div>
+                <div class="card-body">
+                    {% if current_user.is_authenticated %}
+                    <div class="alert alert-success">
+                        <p>Você já está logado. <a href="{{ url_for('dashboard') }}" class="alert-link">Ir para o Dashboard</a></p>
+                    </div>
+                    {% else %}
+                    <!-- Tabs para Login/Contato -->
+                    <ul class="nav nav-tabs" id="formTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="login-tab" data-bs-toggle="tab" data-bs-target="#login-tab-pane" type="button" role="tab">
+                                <i class="fas fa-sign-in-alt me-1"></i> Login
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="contato-tab" data-bs-toggle="tab" data-bs-target="#contato-tab-pane" type="button" role="tab">
+                                <i class="fas fa-user-plus me-1"></i> Quero uma consulta
+                            </button>
+                        </li>
+                    </ul>
+                    <div class="tab-content pt-3" id="formTabsContent">
+                        <!-- Login Tab -->
+                        <div class="tab-pane fade show active" id="login-tab-pane" role="tabpanel" tabindex="0">
+                            <form action="{{ url_for('login') }}" method="post">
+                                <div class="mb-3">
+                                    <label for="username" class="form-label">Nome de usuário</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                        <input type="text" class="form-control" id="username" name="username" required>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="password" class="form-label">Senha</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                        <input type="password" class="form-control" id="password" name="password" required>
+                                    </div>
+                                </div>
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-sign-in-alt me-1"></i> Entrar
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        <!-- Contato Tab -->
+                        <div class="tab-pane fade" id="contato-tab-pane" role="tabpanel" tabindex="0">
+                            <form action="{{ url_for('index') }}" method="post">
+                                <div class="mb-3">
+                                    <label for="nome" class="form-label">Nome completo</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                        <input type="text" class="form-control" id="nome" name="nome" required>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="telefone" class="form-label">Telefone (WhatsApp)</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                                        <input type="tel" class="form-control" id="telefone" name="telefone" placeholder="(DDD) 99999-9999" required>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">E-mail (opcional)</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                        <input type="email" class="form-control" id="email" name="email">
+                                    </div>
+                                </div>
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-paper-plane me-1"></i> Quero mais informações
+                                    </button>
+                                </div>
+                                <div class="mt-2 small text-center">
+                                    <p class="text-muted">Ao enviar, você concorda em receber mensagens sobre nossos serviços de nutrição.</p>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 text-center text-lg-start pt-4 pt-lg-0">
+            <h1 class="display-5 fw-bold text-success">NutriAI</h1>
+            <h2>Transformando vidas através da nutrição inteligente</h2>
+            <p class="lead my-4">
+                Nossa equipe de nutricionistas, apoiada por inteligência artificial avançada, 
+                está pronta para ajudar você a alcançar seus objetivos de saúde e bem-estar 
+                com atendimento personalizado disponível 24 horas por dia.
+            </p>
+            <div class="d-flex flex-column flex-md-row gap-3 justify-content-md-start justify-content-center">
+                <div class="feature">
+                    <i class="fas fa-clock fa-2x text-primary"></i>
+                    <h5 class="mt-2">Disponível 24/7</h5>
+                </div>
+                <div class="feature">
+                    <i class="fas fa-user-md fa-2x text-warning"></i>
+                    <h5 class="mt-2">Profissionais Qualificados</h5>
+                </div>
+                <div class="feature">
+                    <i class="fas fa-brain fa-2x text-info"></i>
+                    <h5 class="mt-2">IA Avançada</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

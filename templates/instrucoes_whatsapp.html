@@ -1,0 +1,73 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="fab fa-whatsapp me-2"></i>Instruções para WhatsApp
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <p><strong>Nota:</strong> Estamos utilizando a versão sandbox do WhatsApp Business API da Twilio. Para começar a usar o serviço, é necessário seguir alguns passos de ativação.</p>
+                    </div>
+
+                    <h4 class="mt-4">1. Adicione nosso número do WhatsApp aos seus contatos</h4>
+                    <div class="bg-light p-3 rounded mb-3">
+                        <p class="mb-0"><strong>Número WhatsApp:</strong> <span class="text-primary">{{ whatsapp_numero }}</span></p>
+                    </div>
+
+                    <h4 class="mt-4">2. Envie a mensagem de ativação</h4>
+                    <p>Para se registrar no sandbox, envie a seguinte mensagem exatamente como está escrita:</p>
+                    <div class="bg-light p-3 rounded mb-3">
+                        <p class="mb-0 font-monospace">{{ codigo_optin }}</p>
+                    </div>
+
+                    <h4 class="mt-4">3. Aguarde a confirmação</h4>
+                    <p>Você receberá uma mensagem de confirmação. A partir deste momento, você pode interagir com nossa IA nutricional pelo WhatsApp.</p>
+
+                    <h4 class="mt-4">O que você pode fazer pelo WhatsApp</h4>
+                    <ul class="list-group mb-4">
+                        <li class="list-group-item">
+                            <i class="fas fa-comment-dots text-success me-2"></i>
+                            Conversar com nossa IA nutricional para obter dicas e orientações
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-file-alt text-info me-2"></i>
+                            Preencher formulários de anamnese e avaliação física
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-calendar-check text-primary me-2"></i>
+                            Agendar consultas com nutricionistas
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-shopping-cart text-warning me-2"></i>
+                            Comprar produtos e serviços nutricionais
+                        </li>
+                    </ul>
+
+                    <h4>Limitações do Sandbox</h4>
+                    <p>Por estar em ambiente sandbox, existem algumas limitações:</p>
+                    <ul>
+                        <li>O opt-in expira após 72 horas de inatividade</li>
+                        <li>Somente mensagens de texto são suportadas (sem imagens, áudio ou documentos)</li>
+                        <li>As conversas precisam ser iniciadas pelo cliente</li>
+                    </ul>
+
+                    <div class="alert alert-warning mt-4">
+                        <p class="mb-0"><strong>Suporte:</strong> Se precisar de ajuda, envie a mensagem "ajuda" para nosso número do WhatsApp ou entre em contato com nosso time de suporte.</p>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-1"></i> Voltar para a página inicial
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
