@@ -1,9 +1,10 @@
+
 from datetime import datetime
 from flask_login import UserMixin
 from database import db
 
 class User(UserMixin, db.Model):
-    """User model for authentication"""
+    """Modelo de usuário para autenticação"""
     __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), unique=True, nullable=False)
@@ -13,7 +14,7 @@ class User(UserMixin, db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 class Lead(db.Model):
-    """Lead model for potential clients"""
+    """Modelo de lead para clientes potenciais"""
     __tablename__ = 'lead'
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(100), nullable=False)
@@ -22,16 +23,16 @@ class Lead(db.Model):
     fonte = db.Column(db.String(50), nullable=True)
     status = db.Column(db.String(20), default='novo')  # novo, em_contato, convertido, perdido
     observacoes = db.Column(db.Text, nullable=True)
-    score = db.Column(db.Float, default=0.0)  # Score de probabilidade de conversão
+    score = db.Column(db.Float, default=0.0)  # Pontuação de probabilidade de conversão
     criado_em = db.Column(db.DateTime, default=datetime.utcnow)
     atualizado_em = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    # Relationships
+    # Relacionamentos
     interacoes = db.relationship('Interacao', backref='lead', lazy=True)
     formularios = db.relationship('Formulario', backref='lead', lazy=True)
 
 class Interacao(db.Model):
-    """Interaction model for communication with leads"""
+    """Modelo de interação para comunicação com leads"""
     __tablename__ = 'interacao'
     id = db.Column(db.Integer, primary_key=True)
     lead_id = db.Column(db.Integer, db.ForeignKey('lead.id'), nullable=False)
@@ -41,7 +42,7 @@ class Interacao(db.Model):
     sentimento = db.Column(db.Float, nullable=True)  # Sentimento da mensagem (-1 a 1)
 
 class Formulario(db.Model):
-    """Form model for client data collection"""
+    """Modelo de formulário para coleta de dados do cliente"""
     __tablename__ = 'formulario'
     id = db.Column(db.Integer, primary_key=True)
     lead_id = db.Column(db.Integer, db.ForeignKey('lead.id'), nullable=False)
@@ -54,7 +55,7 @@ class Formulario(db.Model):
     numero_lembretes = db.Column(db.Integer, default=0)
 
 class BaseConhecimento(db.Model):
-    """Knowledge base for AI responses"""
+    """Base de conhecimento para respostas da IA"""
     __tablename__ = 'base_conhecimento'
     id = db.Column(db.Integer, primary_key=True)
     categoria = db.Column(db.String(50), nullable=False)
@@ -65,7 +66,7 @@ class BaseConhecimento(db.Model):
     atualizado_em = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 class Configuracao(db.Model):
-    """System configuration settings"""
+    """Configurações do sistema"""
     __tablename__ = 'configuracao'
     id = db.Column(db.Integer, primary_key=True)
     chave = db.Column(db.String(50), unique=True, nullable=False)

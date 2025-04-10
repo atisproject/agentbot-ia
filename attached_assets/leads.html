@@ -1,0 +1,434 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-users me-2"></i>Gestão de Leads</h1>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#novoLeadModal">
+            <i class="fas fa-user-plus me-1"></i> Novo Lead
+        </button>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Status</label>
+                    <select class="form-select" id="filtroStatus">
+                        <option value="">Todos</option>
+                        <option value="novo">Novos</option>
+                        <option value="em_contato">Em Contato</option>
+                        <option value="convertido">Convertidos</option>
+                        <option value="perdido">Perdidos</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Fonte</label>
+                    <select class="form-select" id="filtroFonte">
+                        <option value="">Todas</option>
+                        <option value="site">Site</option>
+                        <option value="indicacao">Indicação</option>
+                        <option value="campanha">Campanha</option>
+                        <option value="outros">Outros</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Buscar</label>
+                    <input type="text" class="form-control" id="busca" placeholder="Nome, email ou telefone">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button class="btn btn-primary w-100" id="btnFiltrar">
+                        <i class="fas fa-filter me-1"></i> Filtrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabela de Leads -->
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Contato</th>
+                            <th>Status</th>
+                            <th>Fonte</th>
+                            <th>Data</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if leads %}
+                            {% for lead in leads %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-circle bg-{{ 'success' if lead.status == 'convertido' else 'primary' if lead.status == 'em_contato' else 'secondary' }} me-2">
+                                            {{ lead.nome[:1].upper() }}
+                                        </div>
+                                        <div>
+                                            <span class="fw-bold">{{ lead.nome }}</span>
+                                            {% if lead.email %}
+                                            <div class="small text-muted">{{ lead.email }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ lead.telefone }}</td>
+                                <td>
+                                    <span class="badge rounded-pill bg-{{ 'success' if lead.status == 'convertido' else 'primary' if lead.status == 'em_contato' else 'warning' if lead.status == 'novo' else 'danger' }}">
+                                        {{ lead.status.replace('_', ' ').title() }}
+                                    </span>
+                                </td>
+                                <td>{{ lead.fonte.title() if lead.fonte else '-' }}</td>
+                                <td>{{ lead.criado_em.strftime('%d/%m/%Y') }}</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{{ url_for('detalhe_lead', lead_id=lead.id) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-outline-success" onclick="enviarMensagem({{ lead.id }})">
+                                            <i class="fas fa-comment"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-info" onclick="enviarFormulario({{ lead.id }})">
+                                            <i class="fas fa-file-alt"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-warning" onclick="editarLead({{ lead.id }})">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center py-4">
+                                    <i class="fas fa-search fa-2x mb-3 text-muted"></i>
+                                    <p>Nenhum lead encontrado.</p>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Novo Lead -->
+<div class="modal fade" id="novoLeadModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-user-plus me-2"></i>Novo Lead</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formNovoLead" action="{{ url_for('index') }}" method="post">
+                    <div class="mb-3">
+                        <label for="nomeNovoLead" class="form-label">Nome Completo*</label>
+                        <input type="text" class="form-control" id="nomeNovoLead" name="nome" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="telefoneNovoLead" class="form-label">Telefone*</label>
+                        <input type="tel" class="form-control" id="telefoneNovoLead" name="telefone" placeholder="(DDD) 99999-9999" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="emailNovoLead" class="form-label">E-mail</label>
+                        <input type="email" class="form-control" id="emailNovoLead" name="email">
+                    </div>
+                    <div class="mb-3">
+                        <label for="fonteNovoLead" class="form-label">Fonte</label>
+                        <select class="form-select" id="fonteNovoLead" name="fonte">
+                            <option value="site">Site</option>
+                            <option value="indicacao">Indicação</option>
+                            <option value="campanha">Campanha</option>
+                            <option value="outros">Outros</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" form="formNovoLead" class="btn btn-primary">
+                    <i class="fas fa-save me-1"></i> Salvar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Enviar Mensagem -->
+<div class="modal fade" id="enviarMensagemModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-comment me-2"></i>Enviar Mensagem</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formEnviarMensagem">
+                    <input type="hidden" id="leadIdMensagem">
+                    <div class="mb-3">
+                        <label for="mensagemTexto" class="form-label">Mensagem</label>
+                        <textarea class="form-control" id="mensagemTexto" rows="4" required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="confirmarEnvioMensagem()">
+                    <i class="fas fa-paper-plane me-1"></i> Enviar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Enviar Formulário -->
+<div class="modal fade" id="enviarFormularioModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-file-alt me-2"></i>Enviar Formulário</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formEnviarFormulario">
+                    <input type="hidden" id="leadIdFormulario">
+                    <div class="mb-3">
+                        <label for="tipoFormulario" class="form-label">Tipo de Formulário</label>
+                        <select class="form-select" id="tipoFormulario" required>
+                            <option value="">Selecione...</option>
+                            <option value="avaliacao_fisica">Avaliação Física</option>
+                            <option value="anamnese_nutricional">Anamnese Nutricional</option>
+                            <option value="habitos_alimentares">Hábitos Alimentares</option>
+                            <option value="historico_saude">Histórico de Saúde</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="confirmarEnvioFormulario()">
+                    <i class="fas fa-paper-plane me-1"></i> Enviar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Editar Lead -->
+<div class="modal fade" id="editarLeadModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-edit me-2"></i>Editar Lead</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formEditarLead">
+                    <input type="hidden" id="editLeadId">
+                    <div class="mb-3">
+                        <label for="editNome" class="form-label">Nome Completo*</label>
+                        <input type="text" class="form-control" id="editNome" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editTelefone" class="form-label">Telefone*</label>
+                        <input type="tel" class="form-control" id="editTelefone" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editEmail" class="form-label">E-mail</label>
+                        <input type="email" class="form-control" id="editEmail">
+                    </div>
+                    <div class="mb-3">
+                        <label for="editStatus" class="form-label">Status</label>
+                        <select class="form-select" id="editStatus">
+                            <option value="novo">Novo</option>
+                            <option value="em_contato">Em Contato</option>
+                            <option value="convertido">Convertido</option>
+                            <option value="perdido">Perdido</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="salvarEdicaoLead()">
+                    <i class="fas fa-save me-1"></i> Salvar Alterações
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Filtrar leads
+    document.getElementById('btnFiltrar').addEventListener('click', function() {
+        const status = document.getElementById('filtroStatus').value;
+        const fonte = document.getElementById('filtroFonte').value;
+        const busca = document.getElementById('busca').value;
+        
+        // Implementar lógica de filtro (poderia ser ajax ou js client-side)
+        window.location.href = `{{ url_for('leads') }}?status=${status}&fonte=${fonte}&busca=${busca}`;
+    });
+    
+    // Função para abrir modal de envio de mensagem
+    function enviarMensagem(leadId) {
+        document.getElementById('leadIdMensagem').value = leadId;
+        const modal = new bootstrap.Modal(document.getElementById('enviarMensagemModal'));
+        modal.show();
+    }
+    
+    // Função para confirmar o envio da mensagem
+    function confirmarEnvioMensagem() {
+        const leadId = document.getElementById('leadIdMensagem').value;
+        const mensagem = document.getElementById('mensagemTexto').value;
+        
+        if (!mensagem) {
+            alert('Por favor, escreva uma mensagem.');
+            return;
+        }
+        
+        // Enviar a mensagem via API
+        fetch('/api/enviar_mensagem', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                lead_id: leadId,
+                mensagem: mensagem
+            }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'sucesso') {
+                alert('Mensagem enviada com sucesso!');
+                document.getElementById('mensagemTexto').value = '';
+                bootstrap.Modal.getInstance(document.getElementById('enviarMensagemModal')).hide();
+            } else {
+                alert('Erro ao enviar mensagem: ' + data.mensagem);
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            alert('Erro ao enviar mensagem. Tente novamente.');
+        });
+    }
+    
+    // Função para abrir modal de envio de formulário
+    function enviarFormulario(leadId) {
+        document.getElementById('leadIdFormulario').value = leadId;
+        const modal = new bootstrap.Modal(document.getElementById('enviarFormularioModal'));
+        modal.show();
+    }
+    
+    // Função para confirmar o envio do formulário
+    function confirmarEnvioFormulario() {
+        const leadId = document.getElementById('leadIdFormulario').value;
+        const tipo = document.getElementById('tipoFormulario').value;
+        
+        if (!tipo) {
+            alert('Por favor, selecione um tipo de formulário.');
+            return;
+        }
+        
+        // Enviar formulário via API
+        fetch('/api/enviar_formulario', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                lead_id: leadId,
+                tipo: tipo
+            }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'sucesso') {
+                alert('Formulário enviado com sucesso!');
+                document.getElementById('tipoFormulario').value = '';
+                bootstrap.Modal.getInstance(document.getElementById('enviarFormularioModal')).hide();
+            } else {
+                alert('Erro ao enviar formulário: ' + data.mensagem);
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            alert('Erro ao enviar formulário. Tente novamente.');
+        });
+    }
+    
+    // Função para abrir modal de edição de lead
+    function editarLead(leadId) {
+        // Aqui poderia buscar os dados do lead do servidor
+        // Para simplificar, vamos usar os dados da tabela
+        const row = document.querySelector(`tr[data-lead-id="${leadId}"]`);
+        const nome = row ? row.querySelector('.fw-bold').textContent : '';
+        const email = row ? row.querySelector('.text-muted') ? row.querySelector('.text-muted').textContent : '' : '';
+        const telefone = row ? row.cells[1].textContent : '';
+        const status = row ? row.cells[2].querySelector('.badge').textContent.toLowerCase().replace(' ', '_') : '';
+        
+        document.getElementById('editLeadId').value = leadId;
+        document.getElementById('editNome').value = nome;
+        document.getElementById('editEmail').value = email;
+        document.getElementById('editTelefone').value = telefone;
+        document.getElementById('editStatus').value = status;
+        
+        const modal = new bootstrap.Modal(document.getElementById('editarLeadModal'));
+        modal.show();
+    }
+    
+    // Função para salvar as alterações do lead
+    function salvarEdicaoLead() {
+        const leadId = document.getElementById('editLeadId').value;
+        const nome = document.getElementById('editNome').value;
+        const email = document.getElementById('editEmail').value;
+        const telefone = document.getElementById('editTelefone').value;
+        const status = document.getElementById('editStatus').value;
+        
+        if (!nome || !telefone) {
+            alert('Por favor, preencha os campos obrigatórios.');
+            return;
+        }
+        
+        // Atualizar lead via API
+        fetch('/api/atualizar_lead', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                lead_id: leadId,
+                nome: nome,
+                email: email,
+                telefone: telefone,
+                status: status
+            }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'sucesso') {
+                alert('Lead atualizado com sucesso!');
+                bootstrap.Modal.getInstance(document.getElementById('editarLeadModal')).hide();
+                // Recarregar a página para ver as alterações
+                window.location.reload();
+            } else {
+                alert('Erro ao atualizar lead: ' + data.mensagem);
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            alert('Erro ao atualizar lead. Tente novamente.');
+        });
+    }
+</script>
+{% endblock %}

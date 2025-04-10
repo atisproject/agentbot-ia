@@ -313,7 +313,7 @@
                     document.getElementById('editFonte').value = lead.fonte || 'outros';
                     document.getElementById('editStatus').value = lead.status;
                     document.getElementById('editObservacoes').value = lead.observacoes || '';
-                    
+
                     var modal = new bootstrap.Modal(document.getElementById('editarLeadModal'));
                     modal.show();
                 } else {
@@ -330,12 +330,12 @@
     function confirmarEnvioMensagem() {
         var leadId = document.getElementById('leadIdMensagem').value;
         var mensagem = document.getElementById('mensagemTexto').value;
-        
+
         if (!mensagem.trim()) {
             alert('Por favor, digite uma mensagem');
             return;
         }
-        
+
         // Buscar o número de telefone do lead
         fetch(`/api/leads/${leadId}`)
             .then(response => response.json())
@@ -382,12 +382,12 @@
     function confirmarEnvioFormulario() {
         var leadId = document.getElementById('leadIdFormulario').value;
         var tipoFormulario = document.getElementById('tipoFormulario').value;
-        
+
         if (!tipoFormulario) {
             alert('Por favor, selecione um tipo de formulário');
             return;
         }
-        
+
         // Enviar formulário
         fetch('/api/formularios', {
             method: 'POST',
@@ -427,7 +427,7 @@
             status: document.getElementById('editStatus').value,
             observacoes: document.getElementById('editObservacoes').value
         };
-        
+
         // Atualizar lead
         fetch(`/api/leads/${leadId}`, {
             method: 'PUT',
@@ -457,33 +457,33 @@
         var status = document.getElementById('filtroStatus').value;
         var fonte = document.getElementById('filtroFonte').value;
         var busca = document.getElementById('busca').value.toLowerCase();
-        
+
         var linhas = document.querySelectorAll('tbody tr');
-        
+
         linhas.forEach(function(linha) {
             var mostrar = true;
-            
+
             // Filtrar por status
             if (status && !linha.querySelector('td:nth-child(3) .badge').textContent.toLowerCase().includes(status.replace('_', ' '))) {
                 mostrar = false;
             }
-            
+
             // Filtrar por fonte
             if (fonte && linha.querySelector('td:nth-child(4)').textContent.toLowerCase() !== fonte) {
                 mostrar = false;
             }
-            
+
             // Filtrar por busca
             if (busca) {
                 var nome = linha.querySelector('td:nth-child(1)').textContent.toLowerCase();
                 var email = linha.querySelector('td:nth-child(1) .small') ? linha.querySelector('td:nth-child(1) .small').textContent.toLowerCase() : '';
                 var telefone = linha.querySelector('td:nth-child(2)').textContent.toLowerCase();
-                
+
                 if (!nome.includes(busca) && !email.includes(busca) && !telefone.includes(busca)) {
                     mostrar = false;
                 }
             }
-            
+
             linha.style.display = mostrar ? '' : 'none';
         });
     });

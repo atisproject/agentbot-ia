@@ -1,0 +1,254 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4"><i class="fas fa-cog me-2"></i>Configurações</h1>
+    
+    <div class="row">
+        <div class="col-lg-3">
+            <!-- Menu lateral de navegação -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Categorias</h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="#geral" class="list-group-item list-group-item-action active" data-bs-toggle="list">
+                        <i class="fas fa-sliders-h me-2"></i> Geral
+                    </a>
+                    <a href="#mensagens" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                        <i class="fas fa-comment-dots me-2"></i> Mensagens
+                    </a>
+                    <a href="#formularios" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                        <i class="fas fa-file-alt me-2"></i> Formulários
+                    </a>
+                    <a href="#integracao" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                        <i class="fas fa-plug me-2"></i> Integrações
+                    </a>
+                    <a href="#notificacoes" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                        <i class="fas fa-bell me-2"></i> Notificações
+                    </a>
+                    <a href="#conta" class="list-group-item list-group-item-action" data-bs-toggle="list">
+                        <i class="fas fa-user-cog me-2"></i> Conta
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-9">
+            <!-- Conteúdo das abas -->
+            <div class="tab-content">
+                <!-- Configurações Gerais -->
+                <div class="tab-pane fade show active" id="geral">
+                    <div class="card shadow-sm">
+                        <div class="card-header">
+                            <h5 class="mb-0">Configurações Gerais</h5>
+                        </div>
+                        <div class="card-body">
+                            <form action="{{ url_for('configuracoes') }}" method="post">
+                                <div class="mb-3">
+                                    <label for="config_empresa_nome" class="form-label">Nome da Empresa</label>
+                                    <input type="text" class="form-control" id="config_empresa_nome" name="config_empresa_nome" value="{{ configuracoes|selectattr('chave', 'equalto', 'empresa_nome')|map(attribute='valor')|first|default('Empresa de Nutrição') }}">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="config_telefone_principal" class="form-label">Telefone Principal</label>
+                                    <input type="tel" class="form-control" id="config_telefone_principal" name="config_telefone_principal" value="{{ configuracoes|selectattr('chave', 'equalto', 'telefone_principal')|map(attribute='valor')|first|default('61985870944') }}">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="config_email_contato" class="form-label">E-mail de Contato</label>
+                                    <input type="email" class="form-control" id="config_email_contato" name="config_email_contato" value="{{ configuracoes|selectattr('chave', 'equalto', 'email_contato')|map(attribute='valor')|first|default('contato@nutriai.com.br') }}">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="config_horario_atendimento" class="form-label">Horário de Atendimento</label>
+                                    <input type="text" class="form-control" id="config_horario_atendimento" name="config_horario_atendimento" value="{{ configuracoes|selectattr('chave', 'equalto', 'horario_atendimento')|map(attribute='valor')|first|default('Segunda a Sexta, 08:00 às 18:00') }}">
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-1"></i> Salvar Alterações
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Configurações de Mensagens -->
+                <div class="tab-pane fade" id="mensagens">
+                    <div class="card shadow-sm">
+                        <div class="card-header">
+                            <h5 class="mb-0">Configurações de Mensagens</h5>
+                        </div>
+                        <div class="card-body">
+                            <form action="{{ url_for('configuracoes') }}" method="post">
+                                <div class="mb-3">
+                                    <label for="config_mensagem_boas_vindas" class="form-label">Modelo de Mensagem de Boas-Vindas</label>
+                                    <textarea class="form-control" id="config_mensagem_boas_vindas" name="config_mensagem_boas_vindas" rows="3">{{ configuracoes|selectattr('chave', 'equalto', 'mensagem_boas_vindas')|map(attribute='valor')|first|default('Olá {nome}, seja bem-vindo(a) à nossa empresa de nutrição! Como podemos ajudá-lo(a) hoje?') }}</textarea>
+                                    <div class="form-text">Use {nome} para inserir o nome do cliente.</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="config_mensagem_lembrete" class="form-label">Modelo de Mensagem de Lembrete</label>
+                                    <textarea class="form-control" id="config_mensagem_lembrete" name="config_mensagem_lembrete" rows="3">{{ configuracoes|selectattr('chave', 'equalto', 'mensagem_lembrete')|map(attribute='valor')|first|default('Olá {nome}, não se esqueça de preencher o formulário de {tipo} que enviamos para você. Isso nos ajudará a oferecer um atendimento personalizado.') }}</textarea>
+                                    <div class="form-text">Use {nome} para o nome do cliente e {tipo} para o tipo de formulário.</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="config_mensagem_reativacao" class="form-label">Modelo de Mensagem de Reativação</label>
+                                    <textarea class="form-control" id="config_mensagem_reativacao" name="config_mensagem_reativacao" rows="3">{{ configuracoes|selectattr('chave', 'equalto', 'mensagem_reativacao')|map(attribute='valor')|first|default('Olá {nome}, sentimos sua falta! Gostaríamos de continuar ajudando você a alcançar seus objetivos nutricionais. Como podemos ajudar?') }}</textarea>
+                                    <div class="form-text">Use {nome} para inserir o nome do cliente.</div>
+                                </div>
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="config_mensagens_automaticas" name="config_mensagens_automaticas" value="sim" {% if configuracoes|selectattr('chave', 'equalto', 'mensagens_automaticas')|map(attribute='valor')|first|default('sim') == 'sim' %}checked{% endif %}>
+                                    <label class="form-check-label" for="config_mensagens_automaticas">Ativar mensagens automáticas</label>
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-1"></i> Salvar Alterações
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Configurações de Formulários -->
+                <div class="tab-pane fade" id="formularios">
+                    <div class="card shadow-sm">
+                        <div class="card-header">
+                            <h5 class="mb-0">Configurações de Formulários</h5>
+                        </div>
+                        <div class="card-body">
+                            <form action="{{ url_for('configuracoes') }}" method="post">
+                                <div class="mb-3">
+                                    <label for="config_dias_lembrete_formulario" class="form-label">Dias para envio de lembrete</label>
+                                    <input type="number" class="form-control" id="config_dias_lembrete_formulario" name="config_dias_lembrete_formulario" min="1" max="14" value="{{ configuracoes|selectattr('chave', 'equalto', 'dias_lembrete_formulario')|map(attribute='valor')|first|default('2') }}">
+                                    <div class="form-text">Número de dias após o envio para enviar um lembrete se não for respondido.</div>
+                                </div>
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="config_formularios_automaticos" name="config_formularios_automaticos" value="sim" {% if configuracoes|selectattr('chave', 'equalto', 'formularios_automaticos')|map(attribute='valor')|first|default('sim') == 'sim' %}checked{% endif %}>
+                                    <label class="form-check-label" for="config_formularios_automaticos">Lembrete automático de formulários</label>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="config_max_lembretes" class="form-label">Máximo de lembretes por formulário</label>
+                                    <input type="number" class="form-control" id="config_max_lembretes" name="config_max_lembretes" min="1" max="5" value="{{ configuracoes|selectattr('chave', 'equalto', 'max_lembretes')|map(attribute='valor')|first|default('3') }}">
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-1"></i> Salvar Alterações
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Configurações de Integrações -->
+                <div class="tab-pane fade" id="integracao">
+                    <div class="card shadow-sm">
+                        <div class="card-header">
+                            <h5 class="mb-0">Configurações de Integrações</h5>
+                        </div>
+                        <div class="card-body">
+                            <form action="{{ url_for('configuracoes') }}" method="post">
+                                <div class="mb-3">
+                                    <label for="config_twilio_sid" class="form-label">Twilio Account SID</label>
+                                    <input type="text" class="form-control" id="config_twilio_sid" name="config_twilio_sid" value="*******">
+                                    <div class="form-text">Configurado nas variáveis de ambiente.</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="config_twilio_token" class="form-label">Twilio Auth Token</label>
+                                    <input type="password" class="form-control" id="config_twilio_token" name="config_twilio_token" value="*******">
+                                    <div class="form-text">Configurado nas variáveis de ambiente.</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="config_twilio_phone" class="form-label">Twilio Phone Number</label>
+                                    <input type="text" class="form-control" id="config_twilio_phone" name="config_twilio_phone" value="*******">
+                                    <div class="form-text">Configurado nas variáveis de ambiente.</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="config_openai_api_key" class="form-label">OpenAI API Key</label>
+                                    <input type="password" class="form-control" id="config_openai_api_key" name="config_openai_api_key" value="*******">
+                                    <div class="form-text">Configurado nas variáveis de ambiente.</div>
+                                </div>
+                                <button type="submit" class="btn btn-primary" disabled>
+                                    <i class="fas fa-save me-1"></i> Salvar Alterações
+                                </button>
+                                <div class="alert alert-info mt-3">
+                                    <i class="fas fa-info-circle me-2"></i> As chaves de API são gerenciadas através de variáveis de ambiente por motivos de segurança.
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Configurações de Notificações -->
+                <div class="tab-pane fade" id="notificacoes">
+                    <div class="card shadow-sm">
+                        <div class="card-header">
+                            <h5 class="mb-0">Configurações de Notificações</h5>
+                        </div>
+                        <div class="card-body">
+                            <form action="{{ url_for('configuracoes') }}" method="post">
+                                <div class="mb-3">
+                                    <label for="config_telefone_notificacoes" class="form-label">Telefone para Notificações</label>
+                                    <input type="tel" class="form-control" id="config_telefone_notificacoes" name="config_telefone_notificacoes" value="{{ configuracoes|selectattr('chave', 'equalto', 'telefone_notificacoes')|map(attribute='valor')|first|default('61985870944') }}">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="config_canal_notificacao_padrao" class="form-label">Canal de Comunicação Padrão</label>
+                                    <select class="form-select" id="config_canal_notificacao_padrao" name="config_canal_notificacao_padrao">
+                                        <option value="sms" {% if configuracoes|selectattr('chave', 'equalto', 'canal_notificacao_padrao')|map(attribute='valor')|first|default('sms') == 'sms' %}selected{% endif %}>SMS</option>
+                                        <option value="whatsapp" {% if configuracoes|selectattr('chave', 'equalto', 'canal_notificacao_padrao')|map(attribute='valor')|first|default('sms') == 'whatsapp' %}selected{% endif %}>WhatsApp</option>
+                                    </select>
+                                    <div class="form-text">Canal preferencial para comunicação com leads. Isso pode ser sobrescrito pela origem do lead.</div>
+                                </div>
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="config_notificar_novos_leads" name="config_notificar_novos_leads" value="sim" {% if configuracoes|selectattr('chave', 'equalto', 'notificar_novos_leads')|map(attribute='valor')|first|default('sim') == 'sim' %}checked{% endif %}>
+                                    <label class="form-check-label" for="config_notificar_novos_leads">Notificar novos leads</label>
+                                </div>
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="config_notificar_form_pendentes" name="config_notificar_form_pendentes" value="sim" {% if configuracoes|selectattr('chave', 'equalto', 'notificar_form_pendentes')|map(attribute='valor')|first|default('sim') == 'sim' %}checked{% endif %}>
+                                    <label class="form-check-label" for="config_notificar_form_pendentes">Notificar formulários pendentes</label>
+                                </div>
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="config_notificar_conversoes" name="config_notificar_conversoes" value="sim" {% if configuracoes|selectattr('chave', 'equalto', 'notificar_conversoes')|map(attribute='valor')|first|default('sim') == 'sim' %}checked{% endif %}>
+                                    <label class="form-check-label" for="config_notificar_conversoes">Notificar potenciais conversões</label>
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-1"></i> Salvar Alterações
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Configurações de Conta -->
+                <div class="tab-pane fade" id="conta">
+                    <div class="card shadow-sm">
+                        <div class="card-header">
+                            <h5 class="mb-0">Configurações de Conta</h5>
+                        </div>
+                        <div class="card-body">
+                            <form action="{{ url_for('configuracoes') }}" method="post">
+                                <div class="mb-3">
+                                    <label for="config_usuario_nome" class="form-label">Nome de Usuário</label>
+                                    <input type="text" class="form-control" id="config_usuario_nome" name="config_usuario_nome" value="{{ current_user.username }}" disabled>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="config_usuario_email" class="form-label">E-mail</label>
+                                    <input type="email" class="form-control" id="config_usuario_email" name="config_usuario_email" value="{{ current_user.email }}">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="config_senha_atual" class="form-label">Senha Atual</label>
+                                    <input type="password" class="form-control" id="config_senha_atual" name="config_senha_atual">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="config_nova_senha" class="form-label">Nova Senha</label>
+                                    <input type="password" class="form-control" id="config_nova_senha" name="config_nova_senha">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="config_confirmar_senha" class="form-label">Confirmar Nova Senha</label>
+                                    <input type="password" class="form-control" id="config_confirmar_senha" name="config_confirmar_senha">
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-1"></i> Atualizar Perfil
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,244 @@
+{% extends 'layout.html' %}
+
+{% block extra_css %}
+<style>
+    .stat-card {
+        transition: transform 0.3s;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+    .interaction-list {
+        max-height: 500px;
+        overflow-y: auto;
+    }
+    .interaction-item {
+        border-left: 3px solid transparent;
+        transition: background-color 0.2s;
+    }
+    .interaction-item:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+    .interaction-item.user {
+        border-left-color: #0d6efd;
+    }
+    .interaction-item.ai {
+        border-left-color: #198754;
+    }
+    .interaction-item.system {
+        border-left-color: #ffc107;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4"><i class="fas fa-chart-line me-2"></i>Dashboard</h1>
+    
+    <div class="row mb-4">
+        <!-- Estatísticas Rápidas -->
+        <div class="col-md-3">
+            <div class="card stat-card bg-primary bg-opacity-25 text-white mb-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title">Total de Leads</h6>
+                            <h2 class="mb-0">{{ total_leads }}</h2>
+                        </div>
+                        <i class="fas fa-users fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card bg-success bg-opacity-25 text-white mb-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title">Leads Convertidos</h6>
+                            <h2 class="mb-0">{{ leads_convertidos }}</h2>
+                        </div>
+                        <i class="fas fa-check-circle fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card bg-info bg-opacity-25 text-white mb-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title">Novos Leads</h6>
+                            <h2 class="mb-0">{{ leads_novos }}</h2>
+                        </div>
+                        <i class="fas fa-user-plus fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card bg-warning bg-opacity-25 text-white mb-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title">Taxa de Conversão</h6>
+                            <h2 class="mb-0">{{ taxa_conversao }}%</h2>
+                        </div>
+                        <i class="fas fa-percentage fa-2x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Gráfico de Desempenho -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="fas fa-chart-bar me-2"></i>Desempenho</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="performanceChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Formulários Pendentes -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0"><i class="fas fa-clipboard-list me-2"></i>Formulários Pendentes</h5>
+                    <span class="badge bg-warning rounded-pill">{{ formularios_pendentes|length }}</span>
+                </div>
+                <div class="card-body">
+                    {% if formularios_pendentes %}
+                    <div class="list-group">
+                        {% for formulario, lead in formularios_pendentes %}
+                        <a href="{{ url_for('detalhe_lead', lead_id=lead.id) }}" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ lead.nome }}</h6>
+                                <small>{{ formulario.data_envio.strftime('%d/%m/%Y') }}</small>
+                            </div>
+                            <p class="mb-1">Formulário: {{ formulario.tipo }}</p>
+                            <small>
+                                <i class="fas fa-phone-alt me-1"></i> {{ lead.telefone }}
+                                {% if formulario.lembrete_enviado %}
+                                <span class="badge bg-info ms-2">Lembrete enviado</span>
+                                {% endif %}
+                            </small>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-clipboard-check fa-3x mb-3 text-muted"></i>
+                        <p>Não há formulários pendentes no momento.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Interações Recentes -->
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="card-title mb-0"><i class="fas fa-comments me-2"></i>Interações Recentes</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="interaction-list">
+                        {% if interacoes_recentes %}
+                        <div class="list-group list-group-flush">
+                            {% for interacao, lead in interacoes_recentes %}
+                            <div class="list-group-item interaction-item {{ interacao.origem }}">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        {% if interacao.origem == 'usuario' %}
+                                        <i class="fas fa-user text-primary me-2"></i>
+                                        <strong>{{ lead.nome }}</strong>
+                                        {% elif interacao.origem == 'ia' %}
+                                        <i class="fas fa-robot text-success me-2"></i>
+                                        <strong>NutriAI</strong>
+                                        {% else %}
+                                        <i class="fas fa-cog text-warning me-2"></i>
+                                        <strong>Sistema</strong>
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <small class="text-muted">{{ interacao.data_hora.strftime('%d/%m/%Y %H:%M') }}</small>
+                                        <a href="{{ url_for('detalhe_lead', lead_id=lead.id) }}" class="btn btn-sm btn-outline-secondary ms-2">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                                <p class="mb-0 mt-2">{{ interacao.mensagem|truncate(150) }}</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-comment-slash fa-3x mb-3 text-muted"></i>
+                            <p>Não há interações recentes.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script>
+    // Dados para o gráfico de desempenho
+    const ctx = document.getElementById('performanceChart').getContext('2d');
+    const performanceChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho'],
+            datasets: [{
+                label: 'Novos Leads',
+                data: [5, 10, 15, 12, 20, {{ leads_novos }}],
+                borderColor: 'rgba(13, 110, 253, 0.8)',
+                backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                tension: 0.4,
+                fill: true
+            }, {
+                label: 'Leads Convertidos',
+                data: [2, 5, 7, 8, 10, {{ leads_convertidos }}],
+                borderColor: 'rgba(25, 135, 84, 0.8)',
+                backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    }
+                },
+                x: {
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}
