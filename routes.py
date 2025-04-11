@@ -158,6 +158,36 @@ def atualizar_lead(lead_id):
     return jsonify({'status': 'sucesso', 'mensagem': 'Lead atualizado com sucesso'})
 
 # API para criar novo lead
+@app.route('/api/leads/<int:lead_id>', methods=['GET'])
+@login_required
+def obter_lead(lead_id):
+    lead = Lead.query.get_or_404(lead_id)
+    return jsonify({
+        'id': lead.id,
+        'nome': lead.nome,
+        'email': lead.email,
+        'telefone': lead.telefone,
+        'status': lead.status,
+        'fonte': lead.fonte,
+        'observacoes': lead.observacoes
+    })
+
+@app.route('/api/formulario/enviar', methods=['POST'])
+def enviar_formulario():
+    data = request.json
+    if not data or 'nome' not in data or 'telefone' not in data:
+        return jsonify({'status': 'erro', 'mensagem': 'Dados incompletos'}), 400
+    
+    novo_formulario = Formulario(
+        lead_id=data.get('lead_id'),
+        dados=data,
+        status='pendente'
+    )
+    db.session.add(novo_formulario)
+    db.session.commit()
+    
+    return jsonify({'status': 'sucesso', 'mensagem': 'Formulário enviado com sucesso'})
+
 @app.route('/api/leads', methods=['POST'])
 @login_required
 def criar_lead():
@@ -250,11 +280,11 @@ def configuracoes():
 
 # Rota para manipular erros 404
 @app.errorhandler(404)
-def pagina_nao_encontrada(e):
+def page_not_found(e):
     return render_template('404.html'), 404
 
 # Rota para manipular erros 500
 @app.errorhandler(500)
-def erro_servidor(e):
+def server_error(e):
     logger.error(f"Erro 500: {str(e)}")
     return render_template('500.html'), 500
