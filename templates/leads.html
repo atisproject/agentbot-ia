@@ -214,7 +214,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary" onclick="confirmarEnvioFormulario(document.getElementById('leadIdFormulario').value)">
+                <button type="button" class="btn btn-primary" onclick="confirmarEnvioFormulario()">
                     <i class="fas fa-paper-plane me-1"></i> Enviar
                 </button>
             </div>
@@ -383,15 +383,16 @@
     }
 
     // Função para confirmar envio de formulário
-    function confirmarEnvioFormulario(leadId) {
-        const tipoFormulario = document.getElementById('tipoFormulario').value;
+    function confirmarEnvioFormulario() {
+        var leadId = document.getElementById('leadIdFormulario').value;
+        var tipoFormulario = document.getElementById('tipoFormulario').value;
 
         if (!tipoFormulario) {
-            alert('Por favor, selecione um tipo de formulário.');
+            alert('Por favor, selecione um tipo de formulário');
             return;
         }
 
-        // Enviar formulário via API
+        // Enviar formulário
         fetch('/api/formulario/enviar', {
             method: 'POST',
             headers: {
@@ -399,8 +400,9 @@
             },
             body: JSON.stringify({
                 lead_id: leadId,
-                tipo_formulario: tipoFormulario
-            }),
+                tipo: tipoFormulario,
+                status: "pendente"
+            })
         })
         .then(response => response.json())
         .then(data => {
