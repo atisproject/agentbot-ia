@@ -248,6 +248,42 @@ def configuracoes():
 
     return render_template('configuracoes.html', configuracoes=configuracoes)
 
+
+@app.route('/api/formulario/enviar', methods=['POST'])
+@login_required
+def enviar_formulario():
+    try:
+        data = request.json
+        lead_id = data.get('lead_id')
+        tipo = data.get('tipo')
+
+        if not lead_id or not tipo:
+            return jsonify({'status': 'erro', 'mensagem': 'Dados incompletos'}), 400
+
+        lead = Lead.query.get_or_404(lead_id)
+
+        # Criar novo formulário
+        novo_formulario = Formulario(
+            lead_id=lead_id,
+            tipo=tipo,
+            status='pendente',
+            link=f"/formularios/{tipo}/{lead_id}"  # Link example
+        )
+
+        db.session.add(novo_formulario)
+        db.session.commit()
+
+        return jsonify({
+            'status': 'sucesso',
+            'mensagem': 'Formulário enviado com sucesso'
+        })
+
+    except Exception as e:
+        return jsonify({
+            'status': 'erro',
+            'mensagem': str(e)
+        }), 500
+
 # Rota para manipular erros 404
 @app.errorhandler(404)
 def page_not_found(e):
@@ -258,44 +294,3 @@ def page_not_found(e):
 def server_error(e):
     logger.error(f"Erro 500: {str(e)}")
     return render_template('500.html'), 500
-
-@app.route('/api/enviar_formulario', methods=['POST'])
-@login_required
-def api_enviar_formulario():
-    """API para enviar um formulário para um lead"""
-    try:
-        data = request.json
-
-        if not data or 'lead_id' not in data or 'tipo' not in data:
-            return jsonify({'status': 'erro', 'mensagem': 'Dados incompletos'}), 400
-
-        lead_id = data['lead_id']
-        tipo = data['tipo']
-
-        lead = Lead.query.get(lead_id)
-        if not lead:
-            return jsonify({'status': 'erro', 'mensagem': 'Lead não encontrado'}), 404
-
-        # Criar novo formulário
-        formulario = Formulario(
-            lead_id=lead_id,
-            tipo=tipo,
-            status='pendente',
-            link=f"https://nutriai.com.br/formulario/{tipo}/{lead_id}"
-        )
-
-        db.session.add(formulario)
-        db.session.commit()
-
-        return jsonify({
-            'status': 'sucesso',
-            'mensagem': 'Formulário enviado com sucesso',
-            'formulario_id': formulario.id
-        })
-
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({
-            'status': 'erro',
-            'mensagem': f'Erro ao enviar formulário: {str(e)}'
-        }), 500
