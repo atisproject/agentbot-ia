@@ -158,20 +158,6 @@ def atualizar_lead(lead_id):
     return jsonify({'status': 'sucesso', 'mensagem': 'Lead atualizado com sucesso'})
 
 # API para criar novo lead
-@app.route('/api/leads/<int:lead_id>', methods=['GET'])
-@login_required
-def obter_lead(lead_id):
-    lead = Lead.query.get_or_404(lead_id)
-    return jsonify({
-        'id': lead.id,
-        'nome': lead.nome,
-        'email': lead.email,
-        'telefone': lead.telefone,
-        'status': lead.status,
-        'fonte': lead.fonte,
-        'observacoes': lead.observacoes
-    })
-
 @app.route('/api/formulario/enviar', methods=['POST'])
 def enviar_formulario():
     data = request.json
@@ -180,7 +166,8 @@ def enviar_formulario():
     
     novo_formulario = Formulario(
         lead_id=data.get('lead_id'),
-        dados=data,
+        tipo='contato',
+        link='',
         status='pendente'
     )
     db.session.add(novo_formulario)
