@@ -91,13 +91,13 @@
                                         <a href="{{ url_for('detalhe_lead', lead_id=lead.id) }}" class="btn btn-sm btn-outline-primary">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        <button type="button" class="btn btn-sm btn-outline-success" onclick="enviarMensagem({{ lead.id }})">
+                                        <button type="button" class="btn btn-sm btn-outline-success" onclick="enviarMensagem('{{ lead.id }}')">
                                             <i class="fas fa-comment"></i>
                                         </button>
-                                        <button type="button" class="btn btn-sm btn-outline-info" onclick="enviarFormulario({{ lead.id }})">
+                                        <button type="button" class="btn btn-sm btn-outline-info" onclick="enviarFormulario('{{ lead.id }}')">
                                             <i class="fas fa-file-alt"></i>
                                         </button>
-                                        <button type="button" class="btn btn-sm btn-outline-warning" onclick="editarLead({{ lead.id }})">
+                                        <button type="button" class="btn btn-sm btn-outline-warning" onclick="editarLead('{{ lead.id }}')">
                                             <i class="fas fa-edit"></i>
                                         </button>
                                     </div>
@@ -214,7 +214,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary" onclick="confirmarEnvioFormulario()">
+                <button type="button" class="btn btn-primary" onclick="confirmarEnvioFormulario(document.getElementById('leadIdFormulario').value)">
                     <i class="fas fa-paper-plane me-1"></i> Enviar
                 </button>
             </div>
@@ -328,8 +328,8 @@
 
     // Função para confirmar envio de mensagem
     function confirmarEnvioMensagem() {
-        var leadId = document.getElementById('leadIdMensagem').value;
-        var mensagem = document.getElementById('mensagemTexto').value;
+        const leadId = document.getElementById('leadIdMensagem').value;
+        const mensagem = document.getElementById('mensagemTexto').value;
 
         if (!mensagem.trim()) {
             alert('Por favor, digite uma mensagem');
@@ -338,11 +338,15 @@
 
         // Buscar o número de telefone do lead
         fetch(`/api/leads/${leadId}`)
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erro ao obter dados do lead');
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.status === 'sucesso') {
-                    // Enviar mensagem via WhatsApp
-                    fetch('/api/whatsapp/enviar', {
+                    return fetch('/api/whatsapp/enviar', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -352,52 +356,51 @@
                             mensagem: mensagem,
                             lead_id: leadId
                         })
-                    })
-                    .then(response => response.json())
-                    .then(result => {
-                        if (result.status === 'sucesso') {
-                            alert('Mensagem enviada com sucesso!');
-                            var modal = bootstrap.Modal.getInstance(document.getElementById('enviarMensagemModal'));
-                            modal.hide();
-                            document.getElementById('mensagemTexto').value = '';
-                        } else {
-                            alert(`Erro ao enviar mensagem: ${result.mensagem}`);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Erro:', error);
-                        alert('Erro ao enviar mensagem');
                     });
+                }
+                throw new Error('Erro ao obter informações do lead');
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erro ao enviar mensagem');
+                }
+                return response.json();
+            })
+            .then(result => {
+                if (result.status === 'sucesso') {
+                    alert('Mensagem enviada com sucesso!');
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('enviarMensagemModal'));
+                    modal.hide();
+                    document.getElementById('mensagemTexto').value = '';
                 } else {
-                    alert('Erro ao obter informações do lead');
+                    throw new Error(result.mensagem || 'Erro ao enviar mensagem');
                 }
             })
             .catch(error => {
                 console.error('Erro:', error);
-                alert('Erro ao obter informações do lead');
+                alert(error.message || 'Erro ao processar a requisição');
             });
     }
 
     // Função para confirmar envio de formulário
-    function confirmarEnvioFormulario() {
-        var leadId = document.getElementById('leadIdFormulario').value;
-        var tipoFormulario = document.getElementById('tipoFormulario').value;
+    function confirmarEnvioFormulario(leadId) {
+        const tipoFormulario = document.getElementById('tipoFormulario').value;
 
         if (!tipoFormulario) {
-            alert('Por favor, selecione um tipo de formulário');
+            alert('Por favor, selecione um tipo de formulário.');
             return;
         }
 
-        // Enviar formulário
-        fetch('/api/formularios', {
+        // Enviar formulário via API
+        fetch('/api/formulario/enviar', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
                 lead_id: leadId,
-                tipo: tipoFormulario
-            })
+                tipo_formulario: tipoFormulario
+            }),
         })
         .then(response => response.json())
         .then(data => {
