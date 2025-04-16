@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+  <h2>{{ 'Editar' if formulario else 'Novo' }} Formulário</h2>
+  <form method="POST">
+    {{ form.hidden_tag() }}
+    <div>
+      {{ form.lead_id.label }}<br>
+      {{ form.lead_id() }}
+    </div>
+    <div>
+      {{ form.tipo.label }}<br>
+      {{ form.tipo() }}
+    </div>
+    <div>
+      {{ form.link.label }}<br>
+      {{ form.link(size=80) }}
+    </div>
+    <div>
+      <button type="submit">{{ 'Salvar' if formulario else 'Cadastrar' }}</button>
+    </div>
+  </form>
+{% endblock %}

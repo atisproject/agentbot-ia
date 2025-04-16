@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+  <h2>Formulários Cadastrados</h2>
+  <a href="{{ url_for('admin_formulario.novo_formulario') }}">Novo Formulário</a>
+  <table border="1" cellpadding="6">
+    <tr>
+      <th>ID</th>
+      <th>Lead</th>
+      <th>Tipo</th>
+      <th>Link</th>
+      <th>Status</th>
+      <th>Data Envio</th>
+      <th>Ações</th>
+    </tr>
+    {% for f in formularios %}
+    <tr>
+      <td>{{ f.id }}</td>
+      <td>{{ f.lead.nome if f.lead else 'Modelo' }}</td>
+      <td>{{ f.tipo }}</td>
+      <td><a href="{{ f.link }}" target="_blank">Abrir</a></td>
+      <td>{{ f.status }}</td>
+      <td>{{ f.data_envio.strftime('%d/%m/%Y %H:%M') }}</td>
+      <td>
+        <a href="{{ url_for('admin_formulario.editar_formulario', id=f.id) }}">Editar</a>
+        <form action="{{ url_for('admin_formulario.deletar_formulario', id=f.id) }}" method="post" style="display:inline;">
+          <button type="submit" onclick="return confirm('Tem certeza?')">Deletar</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+{% endblock %}
