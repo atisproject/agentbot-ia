@@ -67,4 +67,12 @@ def start_scheduler():
         scheduler.start()
         logger.info("Agendador em segundo plano iniciado")
 
-# Obs: Rotas são importadas em main.py para evitar dependências circulares
+# Importar e registrar blueprints após configuração do app e do banco
+try:
+    from routes.admin_formulario import admin_formulario_bp
+    app.register_blueprint(admin_formulario_bp)
+    logger.info("Blueprint admin_formulario_bp registrado com sucesso.")
+except Exception as e:
+    logger.error(f"Erro ao registrar blueprint admin_formulario_bp: {e}")
+
+# Obs: Outras rotas são importadas em main.py para evitar dependências circulares

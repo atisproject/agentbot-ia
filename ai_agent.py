@@ -14,7 +14,7 @@ USE_LEGACY_API = False  # Flag para indicar qual versão da API usar
 
 try:
     logger.info("Tentando importar OpenAI SDK novo (v1+)")
-    from openai import OpenAI
+    from openai import OpenAI # type: ignore
     client = OpenAI(api_key=OPENAI_API_KEY)
     logger.info("OpenAI client v1+ inicializado com sucesso")
 except (ImportError, TypeError) as e:
@@ -22,7 +22,7 @@ except (ImportError, TypeError) as e:
     try:
         logger.info("Tentando importar SDK antigo do OpenAI")
         # Fallback para versões antigas
-        import openai as client
+        import openai as client # type: ignore
         client.api_key = OPENAI_API_KEY
         USE_LEGACY_API = True
         logger.info("OpenAI client (legacy) inicializado com sucesso") 

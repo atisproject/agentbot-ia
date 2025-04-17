@@ -33,7 +33,7 @@ def admin_required(func):
 @login_required
 @admin_required
 def listar_formularios():
-    formularios = Formulario.query.order_by(Formulario.data_envio.desc()).all()
+    formularios = Formulario.query.order_by(Formulario.id.desc()).all()
     return render_template('admin/listar_formularios.html', formularios=formularios)
 
 @admin_formulario_bp.route('/admin/formularios/novo', methods=['GET', 'POST'])
@@ -55,7 +55,7 @@ def novo_formulario():
         db.session.commit()
         flash('Formulário cadastrado com sucesso!', 'success')
         return redirect(url_for('admin_formulario.listar_formularios'))
-    return render_template('admin/novo_formulario.html', form=form)
+    return render_template('admin/novo_formulario.html', form=form, formulario=None)
 
 @admin_formulario_bp.route('/admin/formularios/<int:id>/editar', methods=['GET', 'POST'])
 @login_required
