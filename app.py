@@ -4,7 +4,7 @@ import logging
 from flask import Flask
 from flask_login import LoginManager
 from werkzeug.middleware.proxy_fix import ProxyFix
-from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.schedulers.background import BackgroundScheduler # type: ignore
 from database import db, configure_db
 
 # Configuração da Aplicação
@@ -67,12 +67,34 @@ def start_scheduler():
         scheduler.start()
         logger.info("Agendador em segundo plano iniciado")
 
-# Importar e registrar blueprints após configuração do app e do banco
-try:
-    from routes.admin_formulario import admin_formulario_bp
-    app.register_blueprint(admin_formulario_bp)
-    logger.info("Blueprint admin_formulario_bp registrado com sucesso.")
-except Exception as e:
-    logger.error(f"Erro ao registrar blueprint admin_formulario_bp: {e}")
+# --- Registro de Blueprints ---
+# Certifique-se de que a pasta 'routes' tem um arquivo __init__.py (mesmo vazio)
+# para que o import abaixo funcione corretamente.
+def register_blueprints():
+    try:
+        from routes.admin_formulario import admin_formulario_bp # type: ignore
+        app.register_blueprint(admin_formulario_bp)
+        logger.info("Blueprint admin_formulario_bp registrado com sucesso.")
+    except Exception as e:
+        logger.error(f"Erro ao registrar blueprint admin_formulario_bp: {e}")
+        logger.error(f"Verifique se a pasta 'routes' contém um arquivo __init__.py")
 
-# Obs: Outras rotas são importadas em main.py para evitar dependências circulares
+# Inicialização da aplicação
+if __name__ == "__main__":
+    # Inicializar banco de dados
+    init_db()
+    
+    # Registrar blueprints
+    register_blueprints()
+    
+    # Iniciar agendador
+    start_scheduler()
+    
+    # Iniciar aplicação
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=False)
+
+# Obs: Para uso com WSGI (Gunicorn/uWSGI), chame estas funções no arquivo principal:
+# - init_db()
+# - register_blueprints()
+# - start_scheduler()
