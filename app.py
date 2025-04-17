@@ -68,7 +68,7 @@ def start_scheduler():
         logger.info("Agendador em segundo plano iniciado")
 
 # --- Registro de Blueprints ---
-# Certifique-se de que a pasta 'routes' tem um arquivo __init__.py (mesmo vazio)
+# IMPORTANTE: Certifique-se de que a pasta 'routes' tem um arquivo __init__.py (mesmo vazio)
 # para que o import abaixo funcione corretamente.
 def register_blueprints():
     try:
@@ -79,13 +79,13 @@ def register_blueprints():
         logger.error(f"Erro ao registrar blueprint admin_formulario_bp: {e}")
         logger.error(f"Verifique se a pasta 'routes' contém um arquivo __init__.py")
 
+# Registrar blueprints sempre, independente de como a aplicação é executada
+register_blueprints()
+
 # Inicialização da aplicação
 if __name__ == "__main__":
     # Inicializar banco de dados
     init_db()
-    
-    # Registrar blueprints
-    register_blueprints()
     
     # Iniciar agendador
     start_scheduler()
@@ -96,5 +96,4 @@ if __name__ == "__main__":
 
 # Obs: Para uso com WSGI (Gunicorn/uWSGI), chame estas funções no arquivo principal:
 # - init_db()
-# - register_blueprints()
 # - start_scheduler()
